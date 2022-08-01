@@ -1,0 +1,215 @@
+CAKEPATH = /home/sarah/cake-x64-64
+
+CC = /usr/bin/gcc
+
+CCFLAGS = 	-DTPM_POSIX		\
+		-Wall -W -Wmissing-declarations -Wmissing-prototypes -Wnested-externs \
+		-Wformat=2 -Wold-style-definition -Wno-self-assign \
+		-Werror=declaration-after-statement -Wvla \
+		-ggdb -O0 -c 
+
+CCLFLAGS = 	-I. 		\
+		-fPIC		\
+		-DTPM_TPM20
+
+CCAFLAGS = 	-I.		\
+		-DTPM_TPM20	\
+		-fPIE
+
+LNFLAGS = 	-DTPM_POSIX		\
+		-L.
+
+LNLFLAGS = -shared -Wl,-z,now
+
+LNLLIBS = -lcrypto
+
+LNAFLAGS = -pie -Wl,-z,now -Wl,-rpath,.
+
+LNALIBS = -libmtssutils -libmtss
+
+LIBTSSVERSIONED=libibmtss.so.1.6
+
+LIBTSSSONAME=libibmtss.so.1
+
+os := $(shell uname -o)
+ifeq ($(os),Cygwin)
+  LIBTSS=libibmtss.dll
+else
+  LIBTSS=libibmtss.so
+endif
+
+LIBTSSUTILSVERSIONED=libibmtssutils.so.1.6
+LIBTSSUTILSSONAME=libibmtssutils.so.1
+LIBTSSUTILS=libibmtssutils.so
+
+TSS_HEADERS = 	tssauth.h 			\
+		tssccattributes.h 		\
+		tssdev.h  			\
+		tsssocket.h  			\
+		ibmtss/tss.h			\
+		ibmtss/tsscryptoh.h		\
+		ibmtss/tsscrypto.h		\
+		ibmtss/tsserror.h		\
+		ibmtss/tssfile.h		\
+		ibmtss/tssmarshal.h		\
+		ibmtss/tssprint.h		\
+		ibmtss/tssprintcmd.h		\
+		tssproperties.h			\
+		ibmtss/tsstransmit.h		\
+		ibmtss/tssresponsecode.h	\
+		ibmtss/tssutils.h		\
+		ibmtss/Unmarshal_fp.h		\
+		ibmtss/Implementation.h		\
+		tss20.h  		\
+		tssauth20.h
+
+TSS_OBJS = 	tssfile.o 		\
+		tsscryptoh.o 		\
+		tsscrypto.o 		\
+		tssprintcmd.o		\
+		tss.o			\
+		tssproperties.o		\
+		tssmarshal.o		\
+		tssauth.o 		\
+		tssutils.o 		\
+		tsssocket.o 		\
+		tssdev.o 		\
+		tsstransmit.o 		\
+		tssresponsecode.o 	\
+		tssccattributes.o	\
+		tssprint.o		\
+		Unmarshal.o 		\
+		CommandAttributeData.o		\
+		tss20.o		\
+		tssauth20.o	\
+		Commands.o 	\
+		ntc2lib.o	\
+		tssntc.o
+
+TSSUTILS_OBJS = 	cryptoutils.o	\
+		ekutils.o	\
+		imalib.o	\
+		eventlib.o	\
+		efilib.o
+
+
+
+ALL = 	$(LIBTSS)				\
+	$(LIBTSSA)				\
+	$(LIBTSSUTILS)		\
+	sign.o	\
+	verifysignature.o	\
+	TssSignFFI.cake		\
+	TssVerifysignatureFFI.cake
+
+
+all:	$(ALL)
+
+tss.o: 		$(TSS_HEADERS) tss.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) tss.c
+tssauth.o: 	$(TSS_HEADERS) tssauth.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) tssauth.c
+tssproperties.o: $(TSS_HEADERS) tssproperties.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) tssproperties.c
+tssmarshal.o: 	$(TSS_HEADERS) tssmarshal.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) tssmarshal.c
+tsscryptoh.o: 	$(TSS_HEADERS) tsscryptoh.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) tsscryptoh.c
+tsscrypto.o: 	$(TSS_HEADERS) tsscrypto.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) tsscrypto.c
+tssutils.o: 	$(TSS_HEADERS) tssutils.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) tssutils.c
+tssfile.o: 	$(TSS_HEADERS) tssfile.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) tssfile.c
+tsssocket.o: 	$(TSS_HEADERS) tsssocket.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) tsssocket.c
+tssdev.o: 	$(TSS_HEADERS) tssdev.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) tssdev.c
+tsstransmit.o: 	$(TSS_HEADERS) tsstransmit.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) tsstransmit.c
+tssresponsecode.o: $(TSS_HEADERS) tssresponsecode.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) tssresponsecode.c
+tssccattributes.o: $(TSS_HEADERS) tssccattributes.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) tssccattributes.c
+tssprint.o: 	$(TSS_HEADERS) tssprint.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) tssprint.c
+tssprintcmd.o: 	$(TSS_HEADERS) tssprintcmd.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) tssprintcmd.c
+Unmarshal.o: 	$(TSS_HEADERS) Unmarshal.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) Unmarshal.c
+Commands.o: 	$(TSS_HEADERS) Commands.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) Commands.c
+CommandAttributeData.o: 	$(TSS_HEADERS) CommandAttributeData.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) CommandAttributeData.c
+ntc2lib.o:	$(TSS_HEADERS) ntc2lib.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) ntc2lib.c
+tssntc.o:	$(TSS_HEADERS) tssntc.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) tssntc.c
+
+tss20.o: 	$(TSS_HEADERS) tss20.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) tss20.c
+tssauth20.o: 	$(TSS_HEADERS) tssauth20.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) tssauth20.c
+
+cryptoutils.o: 	$(TSS_HEADERS) cryptoutils.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) cryptoutils.c
+ekutils.o: 	$(TSS_HEADERS) ekutils.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) ekutils.c
+imalib.o: 	$(TSS_HEADERS) imalib.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) imalib.c
+eventlib.o: 	$(TSS_HEADERS) eventlib.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) eventlib.c
+efilib.o: 	$(TSS_HEADERS) efilib.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) efilib.c
+
+$(LIBTSS): 	$(TSS_OBJS)
+		$(CC) $(LNFLAGS) $(LNLFLAGS) -Wl,-soname,$(LIBTSSSONAME) -o $(LIBTSSVERSIONED) $(TSS_OBJS) $(LNLLIBS)
+		rm -f $(LIBTSSSONAME)
+		ln -sf $(LIBTSSVERSIONED) $(LIBTSSSONAME)
+		rm -f $(LIBTSS)
+		ln -sf $(LIBTSSSONAME) $(LIBTSS)
+
+$(LIBTSSUTILS):	$(TSSUTILS_OBJS)
+		$(CC) $(LNFLAGS) $(LNLFLAGS) -Wl,-soname,$(LIBTSSUTILSSONAME) -o $(LIBTSSUTILSVERSIONED) $(TSSUTILS_OBJS) $(LNLLIBS)
+		rm -f $(LIBTSSSUTILSONAME)
+		ln -sf $(LIBTSSUTILSVERSIONED) $(LIBTSSUTILSSONAME)
+		rm -f $(LIBTSSUTILS)
+		ln -sf $(LIBTSSUTILSSONAME) $(LIBTSSUTILS)
+
+.PHONY:		clean
+.PRECIOUS:	%.o
+
+clean:		
+		rm -f *.o 		\
+		*.cake.S			\
+		h*.bin			\
+		$(LIBTSSSONAME)		\
+		$(LIBTSSVERSIONED) 	\
+		$(LIBTSSUTILSSONAME) 	\
+		$(LIBTSSUTILSVERSIONED)	\
+		$(ALL)	\
+		ticket.bin	\
+		creationHash.bin	\
+		priv.bin	\
+		pub.bin	\
+		pub.pem	\
+		sig.bin
+
+
+
+
+
+
+TssSignFFI.cake:  ibmtss/tss.h tsssign_ffi.c TssSignFFI.cml sign.o $(LIBTSS) $(LIBTSSUTILS)
+	$(CAKEPATH)/cake < TssSignFFI.cml > TssSignFFI.cake.S
+	$(CC) $(LNFLAGS) $(LNAFLAGS) TssSignFFI.cake.S $(CAKEPATH)/basis_ffi.c tsssign_ffi.c sign.o $(LNALIBS) -o TssSignFFI.cake
+
+TssVerifysignatureFFI.cake:  ibmtss/tss.h tssverifysignature_ffi.c TssVerifysignatureFFI.cml verifysignature.o $(LIBTSS) $(LIBTSSUTILS)
+	$(CAKEPATH)/cake < TssVerifysignatureFFI.cml > TssVerifysignatureFFI.cake.S
+	$(CC) $(LNFLAGS) $(LNAFLAGS) TssVerifysignatureFFI.cake.S $(CAKEPATH)/basis_ffi.c tssverifysignature_ffi.c verifysignature.o $(LNALIBS) -o TssVerifysignatureFFI.cake
+
+sign.o:	ibmtss/tss.h sign.c sign.h
+	$(CC) $(CCFLAGS) $(CCAFLAGS) -c sign.c
+
+verifysignature.o:	ibmtss/tss.h verifysignature.c verifysignature.h
+	$(CC) $(CCFLAGS) $(CCAFLAGS) -c verifysignature.c

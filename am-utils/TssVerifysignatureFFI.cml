@@ -1,0 +1,8 @@
+val _ =
+  let val out_buffer = Word8Array.array 1 (Word8.fromInt 0)
+   in #(tssVerifysignature) "verifysignature -hk 80000001 -halg sha512 -rsa -if msg1 -is sig.bin" out_buffer;
+      print (
+        "Out buffer result: " ^
+        Int.toString (Word8.toInt (Word8Array.sub out_buffer 0)) ^
+        "\n")
+  end
