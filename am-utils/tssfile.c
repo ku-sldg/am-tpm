@@ -69,6 +69,90 @@ int TSS_File_Open(FILE **file,
     return rc;
 }
 
+
+//////////////////////////////////////////////////////////
+
+TPM_RC TSS_GetData(unsigned char **data,     /* must be freed by caller */
+			       size_t *length,
+			       const char *filename) 
+{
+    int		rc = 0;
+    long	lrc;
+    size_t	src;
+    int		irc;
+    FILE	*file = NULL;
+
+    *data = NULL;
+    *length = 0;
+
+	printf("my tss function\n");
+	//lrc = strlen(message);
+
+
+    /* open the file */
+    if (rc == 0) {
+	rc = TSS_File_Open(&file, filename, "rb");				/* closed @1 */
+    }
+    /* determine the file length */
+    if (rc == 0) {
+	irc = fseek(file, 0L, SEEK_END);	/* seek to end of file */
+	if (irc == -1L) {
+	    if (tssVerbose) printf("TSS_File_ReadBinaryFile: Error seeking to end of %s\n",
+				   filename);
+	    rc = TSS_RC_FILE_SEEK;
+	}
+    }
+    if (rc == 0) {
+	lrc = ftell(file);			/* get position in the stream */
+	if (lrc == -1L) {
+	    if (tssVerbose) printf("TSS_File_ReadBinaryFile: Error ftell'ing %s\n", filename);
+	    rc = TSS_RC_FILE_FTELL;
+	}
+	else {
+	    *length = (size_t)lrc;		/* save the length */
+	}
+    }
+    if (rc == 0) {
+	irc = fseek(file, 0L, SEEK_SET);	/* seek back to the beginning of the file */
+	if (irc == -1L) {
+	    if (tssVerbose) printf("TSS_File_ReadBinaryFile: Error seeking to beginning of %s\n",
+				   filename);
+	    rc = TSS_RC_FILE_SEEK;
+	}
+    }
+    /* allocate a buffer for the actual data */
+    if ((rc == 0) && (*length != 0)) {
+	rc = TSS_Malloc(data, (uint32_t)*length);
+    }
+    /* read the contents of the file into the data buffer */
+    if ((rc == 0) && *length != 0) {
+	src = fread(*data, 1, *length, file);
+	if (src != *length) {
+	    if (tssVerbose)
+		printf("TSS_File_ReadBinaryFile: Error reading %s, %u bytes, got %lu\n",
+		       filename, (unsigned int)*length, (unsigned long)src);
+	    rc = TSS_RC_FILE_READ;
+	}
+    }
+    if (file != NULL) {
+	irc = fclose(file);		/* @1 */
+	if (irc != 0) {
+	    if (tssVerbose) printf("TSS_File_ReadBinaryFile: Error closing %s\n",
+				   filename);
+	    rc = TSS_RC_FILE_CLOSE;
+	}
+    }
+    if (rc != 0) {
+	if (tssVerbose) printf("TSS_File_ReadBinaryFile: Error reading %s\n", filename);
+	free(*data);
+	*data = NULL;
+    }
+    return rc;
+}
+///////////////////////////////////////
+
+
+
 /* TSS_File_ReadBinaryFile() reads 'filename'.  The results are put into 'data', which must be freed
    by the caller.  'length' indicates the number of bytes read.
    

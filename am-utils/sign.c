@@ -330,9 +330,12 @@ extern int sign(int argc, char *argv[])
 	printUsage();
     }
     if (rc == 0) {
-	rc = TSS_File_ReadBinaryFile(&data,     /* freed @1 */
+	rc = TSS_GetData(&data,     /* freed @1 */
 				     &length,
 				     messageFilename);
+	//rc = TSS_File_ReadBinaryFile(&data,     /* freed @1 */
+	//			     &length,
+	//			     messageFilename);
     }
     /* hash the file */
     if (rc == 0) {

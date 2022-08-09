@@ -10,7 +10,7 @@ void ffitssSign(    const uint8_t* in,
                     const long out_len ) 
 {
     int rc;
-
+    
     char input[in_len];
     strcpy(input, in);
 

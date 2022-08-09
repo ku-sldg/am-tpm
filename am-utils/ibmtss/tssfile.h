@@ -60,6 +60,10 @@ extern "C" {
 		      const char *filename,
 		      const char* mode);
     LIB_EXPORT
+    TPM_RC TSS_GetData(unsigned char **data,
+				   size_t *length,
+				   const char *filename);
+    LIB_EXPORT
     TPM_RC TSS_File_ReadBinaryFile(unsigned char **data,
 				   size_t *length,
 				   const char *filename); 

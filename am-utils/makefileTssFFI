@@ -97,6 +97,9 @@ TSSUTILS_OBJS = 	cryptoutils.o	\
 ALL = 	$(LIBTSS)				\
 	$(LIBTSSA)				\
 	$(LIBTSSUTILS)		\
+	create.o	\
+	load.o	\
+	flushcontext.o	\
 	sign.o	\
 	verifysignature.o	\
 	TssSignFFI.cake		\
@@ -190,9 +193,9 @@ clean:
 		$(ALL)	\
 		ticket.bin	\
 		creationHash.bin	\
-		priv.bin	\
-		pub.bin	\
-		pub.pem	\
+		privS-wrapped.bin	\
+		pubS.bin	\
+		pubS.pem	\
 		sig.bin
 
 
@@ -207,6 +210,15 @@ TssSignFFI.cake:  ibmtss/tss.h tsssign_ffi.c TssSignFFI.cml sign.o $(LIBTSS) $(L
 TssVerifysignatureFFI.cake:  ibmtss/tss.h tssverifysignature_ffi.c TssVerifysignatureFFI.cml verifysignature.o $(LIBTSS) $(LIBTSSUTILS)
 	$(CAKEPATH)/cake < TssVerifysignatureFFI.cml > TssVerifysignatureFFI.cake.S
 	$(CC) $(LNFLAGS) $(LNAFLAGS) TssVerifysignatureFFI.cake.S $(CAKEPATH)/basis_ffi.c tssverifysignature_ffi.c verifysignature.o $(LNALIBS) -o TssVerifysignatureFFI.cake
+
+create.o:	ibmtss/tss.h create.c create.h
+	$(CC) $(CCFLAGS) $(CCAFLAGS) -c create.c
+
+load.o:	ibmtss/tss.h load.c load.h
+	$(CC) $(CCFLAGS) $(CCAFLAGS) -c load.c
+
+flushcontext.o:	ibmtss/tss.h flushcontext.c flushcontext.h
+	$(CC) $(CCFLAGS) $(CCAFLAGS) -c flushcontext.c
 
 sign.o:	ibmtss/tss.h sign.c sign.h
 	$(CC) $(CCFLAGS) $(CCAFLAGS) -c sign.c
