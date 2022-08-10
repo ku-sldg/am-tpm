@@ -71,6 +71,9 @@ extern int load(int argc, char *argv[])
     TPMI_SH_AUTH_SESSION    	sessionHandle2 = TPM_RH_NULL;
     unsigned int		sessionAttributes2 = 0;
     int tssUtilsVerbose = FALSE;
+
+	FILE *keyHandle_file;
+
     setvbuf(stdout, 0, _IONBF, 0);      /* output may be going through pipe to log file */
     TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "1");
     
@@ -243,7 +246,10 @@ extern int load(int argc, char *argv[])
 	}
     }
     if (rc == 0) {
-	printf("Handle %08x\n", out.objectHandle);
+	//printf("Handle %08x\n", out.objectHandle);
+	keyHandle_file = fopen("parentHandle.txt", "w");
+	fprintf(keyHandle_file, "%08x", out.objectHandle);
+	fclose(keyHandle_file);
 	if (tssUtilsVerbose) printf("load: success\n");
     }
     else {

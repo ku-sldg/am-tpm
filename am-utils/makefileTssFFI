@@ -1,5 +1,3 @@
-CAKEPATH = /home/sarah/cake-x64-64
-
 CC = /usr/bin/gcc
 
 CCFLAGS = 	-DTPM_POSIX		\
@@ -92,18 +90,21 @@ TSSUTILS_OBJS = 	cryptoutils.o	\
 		eventlib.o	\
 		efilib.o
 
-
+APPLICATIONS_OBJS = powerup.o	\
+	startup.o	\
+	createprimary.o	\
+	create.o	\
+	load.o	\
+	sign.o	\
+	flushcontext.o	\
+	verifysignature.o
 
 ALL = 	$(LIBTSS)				\
 	$(LIBTSSA)				\
 	$(LIBTSSUTILS)		\
-	create.o	\
-	load.o	\
-	flushcontext.o	\
-	sign.o	\
-	verifysignature.o	\
-	TssSignFFI.cake		\
-	TssVerifysignatureFFI.cake
+	tpm-setup	\
+	$(APPLICATIONS_OBJS)	\
+	objecttemplates.o
 
 
 all:	$(ALL)
@@ -191,37 +192,40 @@ clean:
 		$(LIBTSSUTILSSONAME) 	\
 		$(LIBTSSUTILSVERSIONED)	\
 		$(ALL)	\
-		ticket.bin	\
-		creationHash.bin	\
-		privS-wrapped.bin	\
-		pubS.bin	\
-		pubS.pem	\
+		parentHandle.txt	\
+		keyHandle.txt	\
+		priv.bin	\
+		pub.bin	\
+		pub.pem	\
 		sig.bin
 
 
+tpm-setup:  ibmtss/tss.h tpm-setup.c powerup.o startup.o createprimary.o objecttemplates.o $(LIBTSS) $(LIBTSSUTILS)
+	$(CC) $(LNFLAGS) $(LNAFLAGS) tpm-setup.c powerup.o startup.o createprimary.o objecttemplates.o $(LNALIBS) -o tpm-setup 
 
+powerup.o:	ibmtss/tss.h powerup.c powerup.h 
+	$(CC) $(CCFLAGS) $(CCAFLAGS) -c powerup.c
 
+startup.o:	ibmtss/tss.h startup.c startup.h 
+	$(CC) $(CCFLAGS) $(CCAFLAGS) -c startup.c
 
+createprimary.o:	ibmtss/tss.h createprimary.c createprimary.h 
+	$(CC) $(CCFLAGS) $(CCAFLAGS) -c createprimary.c
 
-TssSignFFI.cake:  ibmtss/tss.h tsssign_ffi.c TssSignFFI.cml sign.o $(LIBTSS) $(LIBTSSUTILS)
-	$(CAKEPATH)/cake < TssSignFFI.cml > TssSignFFI.cake.S
-	$(CC) $(LNFLAGS) $(LNAFLAGS) TssSignFFI.cake.S $(CAKEPATH)/basis_ffi.c tsssign_ffi.c sign.o $(LNALIBS) -o TssSignFFI.cake
-
-TssVerifysignatureFFI.cake:  ibmtss/tss.h tssverifysignature_ffi.c TssVerifysignatureFFI.cml verifysignature.o $(LIBTSS) $(LIBTSSUTILS)
-	$(CAKEPATH)/cake < TssVerifysignatureFFI.cml > TssVerifysignatureFFI.cake.S
-	$(CC) $(LNFLAGS) $(LNAFLAGS) TssVerifysignatureFFI.cake.S $(CAKEPATH)/basis_ffi.c tssverifysignature_ffi.c verifysignature.o $(LNALIBS) -o TssVerifysignatureFFI.cake
-
-create.o:	ibmtss/tss.h create.c create.h
+create.o:	ibmtss/tss.h create.c create.h 
 	$(CC) $(CCFLAGS) $(CCAFLAGS) -c create.c
 
 load.o:	ibmtss/tss.h load.c load.h
 	$(CC) $(CCFLAGS) $(CCAFLAGS) -c load.c
 
-flushcontext.o:	ibmtss/tss.h flushcontext.c flushcontext.h
-	$(CC) $(CCFLAGS) $(CCAFLAGS) -c flushcontext.c
-
 sign.o:	ibmtss/tss.h sign.c sign.h
 	$(CC) $(CCFLAGS) $(CCAFLAGS) -c sign.c
 
+flushcontext.o:	ibmtss/tss.h flushcontext.c flushcontext.h
+	$(CC) $(CCFLAGS) $(CCAFLAGS) -c flushcontext.c
+
 verifysignature.o:	ibmtss/tss.h verifysignature.c verifysignature.h
 	$(CC) $(CCFLAGS) $(CCAFLAGS) -c verifysignature.c
+
+objecttemplates.o:	ibmtss/tss.h objecttemplates.c objecttemplates.h
+	$(CC) $(CCFLAGS) $(CCAFLAGS) -c objecttemplates.c
