@@ -150,7 +150,7 @@ TPM_RC TSS_GetData(unsigned char **data,     /* must be freed by caller */
     }
 
 	myLength = sizeof(data);
-	printf("my length: %lu\n", myLength);
+	printf("my length: %lu\n their length: %lu\n", myLength, (size_t)lrc);
 
     return rc;
 }
