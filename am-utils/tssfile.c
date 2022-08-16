@@ -82,11 +82,12 @@ TPM_RC TSS_GetData(unsigned char **data,     /* must be freed by caller */
     int		irc;
     FILE	*file = NULL;
 
+	size_t myLength;
+
     *data = NULL;
     *length = 0;
 
 	printf("my tss function\n");
-	//lrc = strlen(message);
 
 
     /* open the file */
@@ -147,6 +148,10 @@ TPM_RC TSS_GetData(unsigned char **data,     /* must be freed by caller */
 	free(*data);
 	*data = NULL;
     }
+
+	myLength = sizeof(data);
+	printf("my length: %lu\n", myLength);
+
     return rc;
 }
 ///////////////////////////////////////
