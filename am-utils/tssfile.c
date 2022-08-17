@@ -361,6 +361,36 @@ TPM_RC TSS_File_WriteStructure(void 			*structure,
     return rc;
 }
 
+
+
+
+
+
+//////////////////////////////////////////////////
+
+uint8_t *TSS_GetSignature(void 			*structure,
+			       MarshalFunction_t 	marshalFunction)
+{
+    TPM_RC 	rc = 0;
+    uint16_t	written = 0;
+    uint8_t	*buffer = NULL;		/* for the free */
+
+    if (rc == 0) {
+	rc = TSS_Structure_Marshal(&buffer,	/* freed @1 */
+				   &written,
+				   structure,
+				   marshalFunction);
+    }
+    printf("written: %u\n\n", (unsigned int)written);
+    return buffer;
+}
+///////////////////////////////////////
+
+
+
+
+
+
 /* TSS_File_Read2B() reads 'filename' and copies the data to 'tpm2b', checking targetSize
 
  */

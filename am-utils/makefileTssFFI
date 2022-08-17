@@ -97,7 +97,8 @@ APPLICATIONS_OBJS = powerup.o	\
 	load.o	\
 	sign.o	\
 	flushcontext.o	\
-	verifysignature.o
+	verifysignature.o	\
+	signX.o
 
 ALL = 	$(LIBTSS)				\
 	$(LIBTSSA)				\
@@ -226,6 +227,9 @@ flushcontext.o:	ibmtss/tss.h flushcontext.c flushcontext.h
 
 verifysignature.o:	ibmtss/tss.h verifysignature.c verifysignature.h
 	$(CC) $(CCFLAGS) $(CCAFLAGS) -c verifysignature.c
+
+signX.o:	ibmtss/tss.h signX.c signX.h
+	$(CC) $(CCFLAGS) $(CCAFLAGS) -c signX.c
 
 objecttemplates.o:	ibmtss/tss.h objecttemplates.c objecttemplates.h
 	$(CC) $(CCFLAGS) $(CCAFLAGS) -c objecttemplates.c

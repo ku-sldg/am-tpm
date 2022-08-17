@@ -85,6 +85,9 @@ extern "C" {
     TPM_RC TSS_File_WriteStructure(void 			*structure,
 				   MarshalFunction_t 	marshalFunction,
 				   const char 		*filename);
+    LIB_EXPORT               
+    uint8_t *TSS_GetSignature(void 			*structure,
+			       MarshalFunction_t 	marshalFunction);
     LIB_EXPORT 
     TPM_RC TSS_File_Read2B(TPM2B 		*tpm2b,
 			   uint16_t 	targetSize,
