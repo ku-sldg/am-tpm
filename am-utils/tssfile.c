@@ -374,7 +374,6 @@ uint8_t *TSS_GetSignature(void 			*structure,
 				   structure,
 				   marshalFunction);
     }
-    printf("written: %u\n\n", (unsigned int)written);
     return buffer;
 }
 ///////////////////////////////////////
