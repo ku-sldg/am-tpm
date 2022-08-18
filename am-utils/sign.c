@@ -64,7 +64,7 @@
 
 #include "sign.h"
 
-extern int sign(int argc, char *argv[])
+extern uint8_t *sign(int argc, char *argv[])
 {
     TPM_RC			rc = 0;
     int				i;    /* argc iterator */
@@ -74,11 +74,9 @@ extern int sign(int argc, char *argv[])
     TPMI_DH_OBJECT		keyHandle = 0;
     TPMI_ALG_HASH		halg = TPM_ALG_SHA256;
     TPMI_ALG_SIG_SCHEME		scheme = TPM_ALG_RSASSA;
-    const char			*messageFilename = NULL;
     const char                  *counterFilename = NULL;
     const char			*ticketFilename = NULL;
     const char			*publicKeyFilename = NULL;
-    const char			*signatureFilename = NULL;
     const char			*keyPassword = NULL; 
     TPMI_SH_AUTH_SESSION    	sessionHandle0 = TPM_RS_PW;
     unsigned int		sessionAttributes0 = 0;
@@ -88,8 +86,8 @@ extern int sign(int argc, char *argv[])
     unsigned int		sessionAttributes2 = 0;
 	int tssUtilsVerbose = FALSE;
 
-    unsigned char 		*data = NULL;	/* message */
-    size_t 			length;
+    char 		*data = NULL;
+    size_t 			length = 100; /* hardcoded length of get_data out buffer*/
     uint32_t           		sizeInBytes;	/* hash algorithm mapped to size */
     TPMT_HA 			digest;		/* digest of the message */
 
@@ -199,13 +197,13 @@ extern int sign(int argc, char *argv[])
 		printUsage();
 	    }
 	}
-	else if (strcmp(argv[i],"-if") == 0) {
+	else if (strcmp(argv[i],"-id") == 0) {
 	    i++;
 	    if (i < argc) {
-		messageFilename = argv[i];
+		data = argv[i];
 	    }
 	    else {
-		printf("-if option needs a value\n");
+		printf("-id option needs a value\n");
 		printUsage();
 	    }
 	}
@@ -226,16 +224,6 @@ extern int sign(int argc, char *argv[])
 	    }
 	    else {
 		printf("-tk option needs a value\n");
-		printUsage();
-	    }
-	}
- 	else if (strcmp(argv[i],"-os") == 0) {
-	    i++;
-	    if (i < argc) {
-		signatureFilename = argv[i];
-	    }
-	    else {
-		printf("-os option needs a value\n");
 		printUsage();
 	    }
 	}
@@ -317,8 +305,8 @@ extern int sign(int argc, char *argv[])
 	    printUsage();
 	}
     }
-    if (messageFilename == NULL) {
-	printf("Missing message file name -if\n");
+    if (data == NULL) {
+	printf("Missing message -id\n");
 	printUsage();
     }
     if (keyHandle == 0) {
@@ -329,14 +317,14 @@ extern int sign(int argc, char *argv[])
 	printf("Missing counter file name -cf for ECDAA algorithm\n");
 	printUsage();
     }
-    if (rc == 0) {
-	rc = TSS_GetData(&data,     /* freed @1 */
-				     &length,
-				     messageFilename);
+    //if (rc == 0) {
+	//rc = TSS_GetData(&data,     /* freed @1 */
+	//			     &length,
+	//			     messageFilename);
 	//rc = TSS_File_ReadBinaryFile(&data,     /* freed @1 */
 	//			     &length,
 	//			     messageFilename);
-    }
+    //}
     /* hash the file */
     if (rc == 0) {
 	digest.hashAlg = halg;
@@ -408,11 +396,11 @@ extern int sign(int argc, char *argv[])
 	    rc = rc1;
 	}
     }
-    if ((rc == 0) && (signatureFilename != NULL)) {
-	rc = TSS_File_WriteStructure(&out.signature,
-				     (MarshalFunction_t)TSS_TPMT_SIGNATURE_Marshalu,
-				     signatureFilename);
+    if ((rc == 0) && (publicKeyFilename == NULL)) {
+    return TSS_GetSignature(&out.signature,
+				     (MarshalFunction_t)TSS_TPMT_SIGNATURE_Marshalu);
     }
+    
     /* if a public key was specified, use openssl to verify the signature using an openssl RSA
        format key token */
     if (publicKeyFilename != NULL) {
@@ -460,7 +448,8 @@ extern int sign(int argc, char *argv[])
 	printf("%s%s%s\n", msg, submsg, num);
 	rc = EXIT_FAILURE;
     }
-    return rc;
+    //return rc;
+    return NULL;
 }
     
 static void printUsage(void)
@@ -471,7 +460,7 @@ static void printUsage(void)
     printf("Runs TPM2_Sign\n");
     printf("\n");
     printf("\t-hk\tkey handle\n");
-    printf("\t-if\tinput message to hash and sign\n");
+    printf("\t-id\tinput message to hash and sign\n");
     printf("\t[-pwdk\tpassword for key (default empty)]\n");
     printf("\t[-halg\t(sha1, sha256, sha384, sha512) (default sha256)]\n");
     printf("\t[-salg\tsignature algorithm (rsa, ecc, hmac) (default rsa)]\n");
@@ -480,7 +469,6 @@ static void printUsage(void)
     printf("\t[-cf\tinput counter file (commit count required for ECDAA scheme]\n");
     printf("\t[-ipu\tpublic key file name to verify signature (default no verify)]\n");
     printf("\t\tVerify only supported for RSA now\n");
-    printf("\t[-os\tsignature file name (default do not save)]\n");
     printf("\t[-tk\tticket file name]\n");
     printf("\n");
     printf("\t-se[0-2] session handle / attributes (default PWAP)\n");
