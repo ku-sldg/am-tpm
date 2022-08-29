@@ -748,7 +748,7 @@ extern int createprimary(int argc, char *argv[])
     }
     if (rc == 0) {
 	//printf("Handle %08x\n", out.objectHandle);
-	keyHandle_file = fopen("parentHandle.txt", "w");
+	keyHandle_file = fopen("src-parentkey-handle.txt", "w");
 	fprintf(keyHandle_file, "%08x", out.objectHandle);
 	fclose(keyHandle_file);
 	if (algPublic == TPM_ALG_RSA) {

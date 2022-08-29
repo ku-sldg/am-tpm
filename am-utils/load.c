@@ -247,7 +247,7 @@ extern int load(int argc, char *argv[])
     }
     if (rc == 0) {
 	//printf("Handle %08x\n", out.objectHandle);
-	keyHandle_file = fopen("keyHandle.txt", "w");
+	keyHandle_file = fopen("src-prikey-handle.txt", "w");
 	fprintf(keyHandle_file, "%08x", out.objectHandle);
 	fclose(keyHandle_file);
 	if (tssUtilsVerbose) printf("load: success\n");
