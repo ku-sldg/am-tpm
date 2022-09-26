@@ -72,15 +72,13 @@ extern int verifysignature(int argc, char *argv[])
     TPMI_DH_OBJECT		keyHandle = 0;
     const char			*pemFilename = NULL;
     const char			*hmacKeyFilename = NULL;
-    const char			*signatureFilename = NULL;
     TPMI_ALG_HASH		halg = TPM_ALG_SHA256;
     TPMI_ALG_PUBLIC 		algPublic = TPM_ALG_RSA;
-    const char			*messageFilename = NULL;
     int				doHash = TRUE;
     const char			*ticketFilename = NULL;
     int				raw = FALSE;	/* default TPMT_SIGNATURE */
-    unsigned char 		*data = NULL;	/* message */
-    size_t 			dataLength;
+    char 		*data = NULL;	/* message */
+    size_t 			dataLength = 100;
     uint8_t			*buffer = NULL;		/* for the free */
     uint8_t			*buffer1 = NULL;	/* for marshaling */
     size_t 			length = 0;
@@ -161,31 +159,20 @@ extern int verifysignature(int argc, char *argv[])
 	else if (strcmp(argv[i], "-ecc") == 0) {
 	    algPublic = TPM_ALG_ECC;
 	}
-	else if (strcmp(argv[i],"-if") == 0) {
+	else if (strcmp(argv[i],"-id") == 0) {
 	    i++;
 	    if (i < argc) {
-		messageFilename = argv[i];
+		data = argv[i];
 	    }
 	    else {
 		printf("-if option needs a value\n");
 		printUsage();
 	    }
 	}
-	else if (strcmp(argv[i],"-ih") == 0) {
-	    i++;
-	    if (i < argc) {
-		messageFilename = argv[i];
-		doHash = FALSE;
-	    }
-	    else {
-		printf("-ih option needs a value\n");
-		printUsage();
-	    }
-	}
 	else if (strcmp(argv[i],"-is") == 0) {
 	    i++;
 	    if (i < argc) {
-		signatureFilename = argv[i];
+		buffer = argv[i];
 	    }
 	    else {
 		printf("-is option needs a value\n");
@@ -287,25 +274,20 @@ extern int verifysignature(int argc, char *argv[])
 	printf("Missing handle parameter -hk, PEM file name -ipem, or HMAC key file name -ihmac\n");
 	printUsage();
     }
-    if (messageFilename == NULL) {
-	printf("Missing message file name -if or hash file name -ih\n");
+    if (data == NULL) {
+	printf("Missing message -id\n");
 	printUsage();
     }
-    if (signatureFilename == NULL) {
-	printf("Missing signature parameter -is\n");
+    if (buffer == NULL) {
+	printf("Missing signature -is\n");
 	printUsage();
-    }
-    if (rc == 0) {
-       rc = TSS_File_ReadBinaryFile(&data,     /* freed @1 */
-				    &dataLength,
-				    messageFilename);
     }
     /* hash the file */
     if (rc == 0) {
 	if (doHash) {
 	    if (rc == 0) {
-		if (tssUtilsVerbose) printf("verifysignature: Hashing message file %s with halg %04x\n",
-				    messageFilename, halg);
+		if (tssUtilsVerbose) printf("verifysignature: Hashing message %s with halg %04x\n",
+				    data, halg);
 		digest.hashAlg = halg;
 		sizeInBytes = TSS_GetDigestSize(digest.hashAlg);
 		rc = TSS_Hash_Generate(&digest,
@@ -319,21 +301,7 @@ extern int verifysignature(int argc, char *argv[])
 		memcpy(&in.digest.t.buffer, (uint8_t *)&digest.digest, sizeInBytes);
 	    }
 	}
-	else {
-	    if (tssUtilsVerbose) printf("verifysignature: Using hash input file %s\n", messageFilename);
-	    in.digest.t.size = (uint16_t)dataLength;
-	    memcpy(&in.digest.t.buffer, (uint8_t *)data, dataLength);
 	}
-	if (rc == 0) {
-	    if (tssUtilsVerbose) TSS_PrintAll("verifysignature: hash",
-				      (uint8_t *)&in.digest.t.buffer, in.digest.t.size);
-	}
-    }
-    if (rc == 0) {
-	rc = TSS_File_ReadBinaryFile(&buffer,     /* freed @2 */
-				     &length,
-				     signatureFilename);
-    }
     if (rc == 0) {
 	if (!raw) {
 	    uint32_t ilength = (uint32_t)length;	/* values that can move during the unmarshal */
@@ -457,12 +425,12 @@ static void printUsage(void)
     printf("\n");
     printf("Runs TPM2_VerifySignature and/or verifies using the PEM public key\n");
     printf("\n");
-    printf("\t-if\tinput message file name\n");
+    printf("\t-id\tinput message\n");
     printf("\t-ih\tinput hash file name\n");
     printf("\n");
     printf("\t\tOne of -if, -ih must be specified\n");
     printf("\n");
-    printf("\t-is\tsignature file name\n");
+    printf("\t-is\tsignature\n");
     printf("\t[-raw\tsignature specified by -is is in raw format]\n");
     printf("\t\t(default TPMT_SIGNATURE)\n");
     printf("\t-hk\tkey handle\n");
