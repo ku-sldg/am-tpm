@@ -62,7 +62,7 @@ TPM_RC rawUnmarshal(TPMT_SIGNATURE *target,
 		    TPMI_ALG_HASH halg,
 		    uint8_t *buffer, size_t length);
 
-extern int verifysignature(int argc, char *argv[])
+extern int verifysignature(int argc, char *argv[], unsigned char *data, uint64_t const dataLen, unsigned char *signature, uint64_t const sigLen)
 {
     TPM_RC			rc = 0;
     int				i;    /* argc iterator */
@@ -77,11 +77,11 @@ extern int verifysignature(int argc, char *argv[])
     int				doHash = TRUE;
     const char			*ticketFilename = NULL;
     int				raw = FALSE;	/* default TPMT_SIGNATURE */
-    char 		*data = NULL;	/* message */
-    size_t 			dataLength = 100;
+    //char 		*data = NULL;	/* message */
+    size_t 			dataLength = dataLen;
     uint8_t			*buffer = NULL;		/* for the free */
     uint8_t			*buffer1 = NULL;	/* for marshaling */
-    size_t 			length = 0;
+    size_t 			length = sigLen;
     uint32_t           		sizeInBytes;	/* hash algorithm mapped to size */
     TPMT_HA 			digest;		/* digest of the message */
     TPMI_SH_AUTH_SESSION    	sessionHandle0 = TPM_RH_NULL;
@@ -158,26 +158,7 @@ extern int verifysignature(int argc, char *argv[])
 	}
 	else if (strcmp(argv[i], "-ecc") == 0) {
 	    algPublic = TPM_ALG_ECC;
-	}
-	else if (strcmp(argv[i],"-id") == 0) {
-	    i++;
-	    if (i < argc) {
-		data = argv[i];
-	    }
-	    else {
-		printf("-if option needs a value\n");
-		printUsage();
-	    }
-	}
-	else if (strcmp(argv[i],"-is") == 0) {
-	    i++;
-	    if (i < argc) {
-		buffer = argv[i];
-	    }
-	    else {
-		printf("-is option needs a value\n");
-		printUsage();
-	    }
+	
 	}
 	else if (strcmp(argv[i],"-raw") == 0) {
 	    raw = TRUE;
@@ -278,10 +259,6 @@ extern int verifysignature(int argc, char *argv[])
 	printf("Missing message -id\n");
 	printUsage();
     }
-    if (buffer == NULL) {
-	printf("Missing signature -is\n");
-	printUsage();
-    }
     /* hash the file */
     if (rc == 0) {
 	if (doHash) {
@@ -301,6 +278,10 @@ extern int verifysignature(int argc, char *argv[])
 		memcpy(&in.digest.t.buffer, (uint8_t *)&digest.digest, sizeInBytes);
 	    }
 	}
+	}
+	if (rc == 0) {
+		buffer = malloc(length);
+		memcpy(buffer, signature, length);
 	}
     if (rc == 0) {
 	if (!raw) {
