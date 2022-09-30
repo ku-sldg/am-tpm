@@ -64,7 +64,7 @@
 
 #include "sign.h"
 
-extern uint8_t *sign(int argc, char *argv[])
+extern uint8_t *sign(int argc, char *argv[], unsigned char *data, uint64_t const dataLen)
 {
     TPM_RC			rc = 0;
     int				i;    /* argc iterator */
@@ -86,8 +86,8 @@ extern uint8_t *sign(int argc, char *argv[])
     unsigned int		sessionAttributes2 = 0;
 	int tssUtilsVerbose = FALSE;
 
-    char 		*data = NULL;
-    size_t 			length = 100; /* hardcoded length of get_data out buffer*/
+    //char 		*data = NULL; /* xxxx originally unsigned char* xxxx */
+    size_t 			length = dataLen;
     uint32_t           		sizeInBytes;	/* hash algorithm mapped to size */
     TPMT_HA 			digest;		/* digest of the message */
 
@@ -194,16 +194,6 @@ extern uint8_t *sign(int argc, char *argv[])
 	    }
 	    else {
 		printf("-cf option needs a value\n");
-		printUsage();
-	    }
-	}
-	else if (strcmp(argv[i],"-id") == 0) {
-	    i++;
-	    if (i < argc) {
-		data = argv[i];
-	    }
-	    else {
-		printf("-id option needs a value\n");
 		printUsage();
 	    }
 	}
